@@ -209,7 +209,6 @@ class Trainer(BaseTrainer):
             *args,
             **kwargs,
     ):
-        # TODO: implement logging of beam search results
         if self.writer is None:
             return
         argmax_inds = log_probs.cpu().argmax(-1).numpy()
@@ -219,9 +218,10 @@ class Trainer(BaseTrainer):
         ]
         argmax_texts_raw = [self.text_encoder.decode(inds) for inds in argmax_inds]
         argmax_texts = [self.text_encoder.ctc_decode(inds) for inds in argmax_inds]
-        hypos = self.text_encoder.ctc_beam_search(log_probs.exp(), beam_size)
-        beam_search_texts = [x.text for x in hypos]
-        beam_search_probs = [x.prob for x in hypos]
+        hypos = [self.text_encoder.ctc_beam_search(one_log_prob.detach().cpu().exp().numpy(), beam_size)
+                 for one_log_prob in log_probs]
+        beam_search_texts = [[x.text for x in one_pred] for one_pred in hypos]
+        beam_search_probs = [[x.prob for x in one_pred] for one_pred in hypos]
         tuples = list(zip(beam_search_texts, text, argmax_texts, argmax_texts_raw, beam_search_probs, audio_path))
         shuffle(tuples)
         rows = {}

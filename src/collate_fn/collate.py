@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 def collate_fn(batch: List[dict]):
     """
     Collate and pad fields in dataset items
-    one_item: {
+    input: {
             "audio": torch.tensor [bs, sr * duration],
             "spectrogram": torch.tensor [bs, n_feature, n_time],
             "duration": audio_wave.size(1) / self.config_parser["preprocessing"]["sr"],
@@ -19,7 +19,6 @@ def collate_fn(batch: List[dict]):
         }
     """
     batch_size = len(batch)
-    result_batch = {}
 
     lens = torch.zeros(batch_size, 3)
     duration, text, audio_path = [], [], []
@@ -30,7 +29,8 @@ def collate_fn(batch: List[dict]):
         audio_path.append(item['audio_path'])
 
     max_audio_len, max_spec_time, max_encoded_len = lens.max(dim=0).values
-    text_encoded_length = lens[:, 2]
+    spectrogram_length = lens[:, 1].long()
+    text_encoded_length = lens[:, 2].long()
     duration = torch.tensor(duration)
 
     audio = torch.zeros(batch_size, int(max_audio_len))
@@ -45,6 +45,7 @@ def collate_fn(batch: List[dict]):
     return {
         "audio": audio,
         "spectrogram": spectrogram,
+        "spectrogram_length": spectrogram_length,
         "duration": duration,
         "text": text,
         "text_encoded": text_encoded,
