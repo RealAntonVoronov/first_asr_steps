@@ -167,7 +167,7 @@ class Trainer(BaseTrainer):
         """
         self.model.eval()
         self.evaluation_metrics.reset()
-        with torch.no_grad():
+        with torch.inference_mode():
             for batch_idx, batch in tqdm(
                     enumerate(dataloader),
                     desc=part,
@@ -205,6 +205,7 @@ class Trainer(BaseTrainer):
             log_probs_length,
             audio_path,
             examples_to_log=10,
+            beam_size=10,
             *args,
             **kwargs,
     ):
@@ -218,18 +219,28 @@ class Trainer(BaseTrainer):
         ]
         argmax_texts_raw = [self.text_encoder.decode(inds) for inds in argmax_inds]
         argmax_texts = [self.text_encoder.ctc_decode(inds) for inds in argmax_inds]
-        tuples = list(zip(argmax_texts, text, argmax_texts_raw, audio_path))
+        hypos = self.text_encoder.ctc_beam_search(log_probs.exp(), beam_size)
+        beam_search_texts = [x.text for x in hypos]
+        beam_search_probs = [x.prob for x in hypos]
+        tuples = list(zip(beam_search_texts, text, argmax_texts, argmax_texts_raw, beam_search_probs, audio_path))
         shuffle(tuples)
         rows = {}
-        for pred, target, raw_pred, audio_path in tuples[:examples_to_log]:
+        for pred, target, argmax_pred, raw_pred, beam_probs, audio_path in tuples[:examples_to_log]:
+            if isinstance(pred, list):
+                main_pred = pred[0]
+            else:
+                main_pred = pred
             target = BaseTextEncoder.normalize_text(target)
-            wer = calc_wer(target, pred) * 100
-            cer = calc_cer(target, pred) * 100
+            wer = calc_wer(target, main_pred) * 100
+            cer = calc_cer(target, main_pred) * 100
 
             rows[Path(audio_path).name] = {
                 "target": target,
+                "pred": pred,
+                "beam predictions": pred,
+                "argmax prediction": argmax_pred,
                 "raw prediction": raw_pred,
-                "predictions": pred,
+                "beam predictions probs": beam_probs,
                 "wer": wer,
                 "cer": cer,
             }

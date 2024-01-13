@@ -17,7 +17,6 @@ class TestDataloader(unittest.TestCase):
                 "dev-clean", text_encoder=config_parser.get_text_encoder(),
                 config_parser=config_parser
             )
-
             batch_size = 3
             batch = collate_fn([ds[i] for i in range(batch_size)])
 
