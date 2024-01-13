@@ -7,8 +7,8 @@ from datasets import load_dataset
 import re
 from tqdm import tqdm
 
-from hw_asr.base.base_dataset import BaseDataset
-from hw_asr.utils import ROOT_PATH
+from src.base.base_dataset import BaseDataset
+from src.utils import ROOT_PATH
 
 logger = logging.getLogger(__name__)
 

@@ -10,11 +10,11 @@ from torch.nn.utils import clip_grad_norm_
 from torchvision.transforms import ToTensor
 from tqdm import tqdm
 
-from hw_asr.base import BaseTrainer
-from hw_asr.base.base_text_encoder import BaseTextEncoder
-from hw_asr.logger.utils import plot_spectrogram_to_buf
-from hw_asr.metric.utils import calc_cer, calc_wer
-from hw_asr.utils import inf_loop, MetricTracker
+from src.base import BaseTrainer
+from src.base.base_text_encoder import BaseTextEncoder
+from src.logger.utils import plot_spectrogram_to_buf
+from src.metric.utils import calc_cer, calc_wer
+from src.utils import inf_loop, MetricTracker
 
 
 class Trainer(BaseTrainer):
