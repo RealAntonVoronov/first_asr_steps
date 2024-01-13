@@ -1,8 +1,10 @@
 # ASR project barebones
 
 ## Installation guide
-
-< Write your installation guide here >
+Before you start add root folder to `$PYTHONPATH` to make relative imports work.
+```shell
+export PYTHONPATH=.
+```
 
 ```shell
 pip install -r ./requirements.txt
